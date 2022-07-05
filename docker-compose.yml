@@ -1,0 +1,15 @@
+version: "3"
+volumes:
+  chk-storage:
+    driver: local
+services:
+  chk:
+    build: .
+    volumes:
+      - ./config_all_monks.pl:/app/config_all_monks.pl:ro
+      - chk-storage:/app/persistent:rw
+    environment:
+      - TG_CHAT_ID=${TG_CHAT_ID}
+      - TG_TOKEN=${TG_TOKEN}
+      - VIEWER='Executor'
+      
