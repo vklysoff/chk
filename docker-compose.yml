@@ -12,4 +12,5 @@ services:
       - TG_CHAT_ID=${TG_CHAT_ID}
       - TG_TOKEN=${TG_TOKEN}
       - VIEWER='Executor'
+      - RECHECK_TIME=60
       
