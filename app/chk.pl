@@ -23,8 +23,6 @@ use POSIX qw(strftime);
 
 binmode(STDOUT,':utf8');
 
-my $datestring = strftime "%Y-%m-%e %H:%M:%S", localtime;
-my @time = localtime();
 my $script_name = $0;
 $script_name =~ s|.*/||;
 my $db_name = "chk.db";
@@ -47,6 +45,8 @@ my $qins = $db->prepare('INSERT INTO urls (url) VALUES(?)');
 my $fork = new Parallel::ForkManager($max_forks);
 
 while (42) {
+	my $datestring = strftime "%Y-%m-%e %H:%M:%S", localtime;
+	my @time = localtime();
 	foreach my $Monk ( @{ $Mon->{'list'} } ) {
 		next if not $Monk->{enabled};
 		my @codes_ok = [ 200 ];
@@ -55,7 +55,6 @@ while (42) {
 		my $timeout = exists $Monk->{timeout} ? $Monk->{timeout} : $timeout_default;
 		my $try_count = exists $Monk->{try} ? $Monk->{try} : $try_count_default;
 		$fork->start and next;
-		print "\t\t$Monk->{prj} $Monk->{url} [timeout=$timeout; try=$try_count]: " if $debug;
 		$log->info("$Monk->{prj} $Monk->{url} [timeout=$timeout; try=$try_count]");
 		my $ua = LWP::UserAgent->new;
 		$ua->timeout( $timeout );
@@ -82,23 +81,19 @@ while (42) {
 		my $msg = $response->{_msg};
 		$msg =~ s|'||g;
 		$log->info("$Monk->{prj} $Monk->{url} $response->{_rc} $response->{_msg}");
-		print "$response->{_rc} $response->{_msg}\n" if $debug;
 		$qsel->execute($Monk->{url}) or die($db->errstr);
 		my $row = $qsel->fetchrow_hashref();
-        if ( defined $row and $time[1] = 0 ) {
+        if ( defined $row and $time[1] == 42 ) {
             if ( int($row->{delta}/60+1) > 60 ) {
-                print "Страница длительное время имеет проблемы с доступом $Monk->{prj}: $Monk->{url}\n" if $debug;
                 tg_send("%F0%9F%92%80 Длительное время недоступна страница проекта: <b>$Monk->{prj}</b>: <a href=\"$Monk->{url}\">$Monk->{info}</a>.\nНедоступно в течении ".int($row->{delta}/60+1)." минут.\nНаблюдатель: $ENV{VIEWER}\n$datestring");
                 $log->error("Длительное время недоступна страница проекта: $Monk->{prj} $Monk->{url}".int($row->{delta}/60+1)." минут");
             }
         }
 		if ( $response->{_rc} ~~ @codes_ok and defined $row ) {
-			print "Страница восстановлена $Monk->{prj}: $response->{_rc} $response->{_msg}\n" if $debug;
 			$log->warn("$Monk->{prj} $Monk->{url} $response->{_rc} $response->{_msg}");
 			$qdel->execute($Monk->{url}) or die($db->errstr);
 			tg_send("%F0%9F%92%A6 Доступна страница проекта: <b>$Monk->{prj}</b>: <a href=\"$Monk->{url}\">$Monk->{info}</a>\nКод: ($response->{_rc}) $msg\nБыло недоступно около ".int($row->{delta}/60+1)." минут.\nНаблюдатель: $ENV{VIEWER}\n$datestring");
 		} elsif ( not $response->{_rc} ~~ @codes_ok and not defined $row ) {
-			print "Страница пропала $Monk->{prj}: $response->{_rc} $response->{_msg}\n" if $debug;
 			$log->error("$Monk->{prj} $Monk->{url} $response->{_rc} $response->{_msg}");
 			$qins->execute($Monk->{url}) or die($db->errstr);
 			tg_send("%F0%9F%94%A5 Недоступна страница проекта <b>$Monk->{prj}</b>: <a href=\"$Monk->{url}\">$Monk->{info}</a>\nКод: ($response->{_rc}) $msg\nНаблюдатель: $ENV{VIEWER}\n$datestring");
