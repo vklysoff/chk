@@ -110,7 +110,7 @@ while (42) {
 			$fork->finish;
 		}
 	};
-	sleep 60;
+	sleep $ENV{RECHECK_TIME};
 }
 $db->disconnect;
 
