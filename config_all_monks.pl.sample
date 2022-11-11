@@ -2,51 +2,33 @@
 use strict;
 use utf8;
 
-'project1' => {
-	'menu' => 'Project 1',
-	'enabled' => 1,
-	'info' => 'Some Project 1',
-	'web' => {
-		check => {
-			menu => 'Проверка доступности',
-			enabled => 1,
-			info => 'Проверка доступности',
-			list => [
-				{
-					menu => 'Главная страница',
-					enabled => 1,
-					info => 'Главная страница',
-					url => 'http://www.example.com',
-				},
-				{
-					menu => 'Тест №1',
-					enabled => 0,
-					info => 'Тест №1',
-					url => 'https://www.example.com/test1',
-				},
-				{
-					menu => 'Nagios 2',
-					enabled => 1,
-					info => 'Nagios. Оперативный мониторинг',
-					url => 'http://www.example.com/nagios/',
-				}
-			]
-		},
-		'monitors' => {
-			'menu' => 'Мониторинги',
-			'enabled' => 1,
-			'info' => 'Оперативные мониторинги',
-			'list' => [
-				{
-				'menu' => 'Nagios',
-				'enabled' => 1,
-				'info' => 'Оперативный мониторинг',
-				'json_url' => 'http://www.example.com/nagios/statusJson.php',
-				'url' => 'http://www.example.com/nagios/',
-				'user'     => 'nagiosadmin',
-				'pass'     => 'nagiosadmin',
-				'type'     => 'nagios',
-				},
-			],
+list => [
+	{
+		prj => 'Project 1',
+		enabled => 1,
+		info => 'Main page',
+		url => 'https://main.project1.space',
 	},
-},
+	{
+		prj => 'Project 1',
+		enabled => 0,
+		info => 'Some page',
+		url => 'https://some.project1.space',
+	},
+	{
+		prj => 'Project 2',
+		enabled => 1,
+		info => 'Main of Project 2',
+		url => 'https://main.project2.space',
+		user	=> 'nagios',
+		pass	=> 'nagios',
+	},
+	{
+		prj => 'Project 3',
+		enabled => 1,
+		info => 'Main of Project 3',
+		url => 'https://main.project3.space/',
+		timeout => 180,
+		try => 5,
+	},
+]
